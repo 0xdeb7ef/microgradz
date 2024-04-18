@@ -150,8 +150,6 @@ pub fn Value(comptime T: type) type {
                     return self.mul(new(other).pow(-1));
                 },
             }
-
-            return null;
         }
 
         pub fn pow(self: *Self, other: anytype) *Self {
