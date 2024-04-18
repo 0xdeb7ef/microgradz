@@ -9,10 +9,12 @@ const ExprType = enum {
 const UnaryType = enum {
     tanh,
     exp,
+    relu,
 };
 
 const BinaryType = enum {
     add,
+    sub,
     mul,
     pow,
 };
@@ -74,11 +76,13 @@ pub fn Value(comptime T: type) type {
                     switch (u.op) {
                         .tanh => tanh_back(self),
                         .exp => exp_back(self),
+                        .relu => relu_back(self),
                     }
                 },
                 .binary => |b| {
                     switch (b.op) {
                         .add => add_back(self),
+                        .sub => sub_back(self),
                         .mul => mul_back(self),
                         .pow => pow_back(self),
                     }
@@ -115,7 +119,6 @@ pub fn Value(comptime T: type) type {
                     return binary(self.data + o.data, .add, self, o);
                 },
             }
-            return self.add(-other);
         }
         fn add_back(self: *Self) void {
             self.expr.binary.args[0].grad += self.grad;
@@ -125,12 +128,17 @@ pub fn Value(comptime T: type) type {
         pub fn sub(self: *Self, other: anytype) *Self {
             switch (@TypeOf(other)) {
                 *Self => {
-                    return self.add(-other.data);
+                    return binary(self.data - other.data, .sub, self, other);
                 },
                 else => {
-                    return self.add(-other);
+                    const o = new(other);
+                    return binary(self.data - o.data, .sub, self, o);
                 },
             }
+        }
+        fn sub_back(self: *Self) void {
+            self.expr.binary.args[0].grad += self.grad;
+            self.expr.binary.args[1].grad -= self.grad;
         }
 
         pub fn div(self: *Self, other: anytype) *Self {
@@ -207,6 +215,14 @@ pub fn Value(comptime T: type) type {
         fn exp_back(self: *Self) void {
             self.expr.unary.args[0].grad += @exp(self.expr.unary.args[0].data) * self.grad;
         }
+
+        pub fn relu(self: *Self) *Self {
+            return unary(@max(0, self.data), .relu, self);
+        }
+        fn relu_back(self: *Self) void {
+            const grad = if (self.data > 0) self.grad else 0;
+            self.expr.unary.args[0].grad += grad;
+        }
     };
 }
 
@@ -233,8 +249,7 @@ pub fn Backprop(comptime T: type) type {
         pub fn backprop(self: *Self, root: *T) void {
             self.topo.clearRetainingCapacity();
             self.visited.clearRetainingCapacity();
-
-            backwards_rec(self, root);
+            self.backwards_rec(root);
 
             root.grad = 1;
             var top = self.topo.items;
