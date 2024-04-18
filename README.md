@@ -61,7 +61,7 @@ _TODO_
 _None, but..._
 
 You can output the graph in JSON format and visualize it using an online JSON
-visualization tool like [JSONViewer](https://www.jsonviewer.tools/editor).
+visualization tool like [JSON Visio](https://omute.net/).
 
 ```zig
 // JSON output
