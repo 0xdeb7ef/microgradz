@@ -136,27 +136,10 @@ pub fn Value(comptime T: type) type {
         pub fn div(self: *Self, other: anytype) *Self {
             switch (@TypeOf(other)) {
                 *Self => {
-                    // check if nop
-                    switch (other.expr) {
-                        .nop => {
-                            return self.mul(other.pow(-1));
-                        },
-                        else => {
-                            // const o = new(other.data);
-                            return self.mul(other.pow(-1));
-                        },
-                    }
+                    return self.mul(other.pow(-1));
                 },
-                else => |s| {
-                    switch (@typeInfo(s)) {
-                        .Int, .Float, .ComptimeInt, .ComptimeFloat => {
-                            const o = new(other);
-                            return self.mul(o.pow(-1));
-                        },
-                        else => {
-                            @compileError("Only integers and floating-point types are supported.");
-                        },
-                    }
+                else => {
+                    return self.mul(new(other).pow(-1));
                 },
             }
 
