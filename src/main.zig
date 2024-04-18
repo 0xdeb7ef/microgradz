@@ -9,35 +9,41 @@ pub fn main() !void {
     const alloc = gpa.allocator();
     defer _ = gpa.deinit();
 
-    const Value = ValueType(f64);
+    const Value = ValueType(f32);
     Value.init(alloc);
     defer Value.deinit();
 
     var Backprop = BackpropType(Value).init(alloc);
     defer Backprop.deinit();
 
-    // inputs x1,x2
-    const x1 = Value.new(2);
-    const x2 = Value.new(0);
+    // Example from Micrograd
+    var a = Value.new(-4);
+    var b = Value.new(2);
+    var c = a.add(b);
+    var d = a.mul(b).add(b.pow(3));
+    // c += c + 1
+    c = c.add(c.add(1));
+    // c += 1 + c + (-a)
+    c = c.add(c.add(1).sub(a));
+    // d += d * 2 + (b + a).relu()
+    d = d.add(d.mul(2).add(b.add(a).relu()));
+    // d += 3 * d + (b - a).relu()
+    d = d.add(d.mul(3).add(b.sub(a).relu()));
 
-    // weights w1, w2
-    const w1 = Value.new(-3);
-    const w2 = Value.new(1);
+    var e = c.sub(d);
+    var f = e.pow(2);
+    var g = f.div(2);
+    // g += 10.0 / f
+    g = g.add(Value.new(10).div(f));
 
-    // bias b
-    const b = Value.new(6.8813735870195432);
+    print("g.data: {d:.4}\n", .{g.data}); // 24.7041
 
-    const x1w1 = x1.mul(w1);
-    const x2w2 = x2.mul(w2);
-    const x1w1x2w2 = x1w1.add(x2w2);
+    Backprop.backprop(g);
 
-    const n = x1w1x2w2.add(b);
-    // const o = n.tanh();
-    const e = n.mul(2).exp();
-    const o = e.sub(1).div(e.add(1));
+    print("a.grad: {d:.4}\n", .{a.grad}); // 138.8338
+    print("b.grad: {d:.4}\n", .{b.grad}); // 645.5773
 
-    Backprop.backprop(o);
-
-    try std.json.stringify(o, .{}, std.io.getStdOut().writer());
-    print("\n", .{});
+    // JSON output
+    // try std.json.stringify(g, .{}, std.io.getStdOut().writer());
+    // print("\n", .{});
 }
