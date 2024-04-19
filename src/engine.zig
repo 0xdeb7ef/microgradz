@@ -52,10 +52,6 @@ pub fn Value(comptime T: type) type {
             arena.deinit();
         }
 
-        pub fn reset() void {
-            arena.reset(.retain_capacity);
-        }
-
         pub fn new(value: T) *Self {
             return create(value, Expr{ .nop = {} });
         }
