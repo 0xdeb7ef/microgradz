@@ -12,28 +12,37 @@ pub fn main() !void {
     const alloc = gpa.allocator();
     defer _ = gpa.deinit();
 
+    // init the Value pool with f64 type
     const Value = ValueType(f64);
     Value.init(alloc);
     defer Value.deinit();
 
+    // init the Backprop pool with the Value type
     var Backprop = BackpropType(Value).init(alloc);
     defer Backprop.deinit();
 
+    // init the Neuron pool with the Value type and f64 random numbers
     const Neuron = NeuronType(Value, f64);
     Neuron.init(alloc);
     defer Neuron.deinit();
 
+    // init the Layer pool with the Neuron and Value types
     const Layer = LayerType(Neuron, Value);
     Layer.init(alloc);
     defer Layer.deinit();
 
+    // finally, init the MLP pool with the Layer and Value types
     const MLP = MLPType(Layer, Value);
     MLP.init(alloc);
     defer MLP.deinit();
 
+    // pass the sizes as a slice
+    // NOTE - might be better to refactor
+    // the nn.zig code and use anytype instead?
     var sizes = [_]usize{ 4, 4, 1 };
     const M = MLP.new(3, &sizes);
 
+    // inputs to the neural net
     const inputs = [4][3]*Value{
         [_]*Value{ Value.new(2), Value.new(3), Value.new(-1) },
         [_]*Value{ Value.new(3), Value.new(-1), Value.new(0.5) },
@@ -41,11 +50,12 @@ pub fn main() !void {
         [_]*Value{ Value.new(1), Value.new(1), Value.new(-1) },
     };
 
+    // the desired output
     const outputs = [_]*Value{ Value.new(1), Value.new(-1), Value.new(-1), Value.new(1) };
 
     var loop: usize = 1;
     while (loop <= 20) : (loop += 1) {
-        print("[{d:3}] ", .{loop});
+        print("[{d:2}] ", .{loop});
         var loss = Value.new(0);
 
         // Forward Pass
@@ -82,41 +92,4 @@ pub fn main() !void {
         outputs[2].data,
         outputs[3].data,
     });
-
-    // print("{any}\n", .{P});
-
-    // JSON output
-    // try std.json.stringify(x, .{}, std.io.getStdOut().writer());
-    // print("\n", .{});
-
-    // Example from Micrograd
-    // var a = Value.new(-4);
-    // var b = Value.new(2);
-    // var c = a.add(b);
-    // var d = a.mul(b).add(b.pow(3));
-    // // c += c + 1
-    // c = c.add(c.add(1));
-    // // c += 1 + c + (-a)
-    // c = c.add(c.add(1).sub(a));
-    // // d += d * 2 + (b + a).relu()
-    // d = d.add(d.mul(2).add(b.add(a).relu()));
-    // // d += 3 * d + (b - a).relu()
-    // d = d.add(d.mul(3).add(b.sub(a).relu()));
-
-    // var e = c.sub(d);
-    // var f = e.pow(2);
-    // var g = f.div(2);
-    // // g += 10.0 / f
-    // g = g.add(Value.new(10).div(f));
-
-    // print("g.data: {d:.4}\n", .{g.data}); // 24.7041
-
-    // Backprop.backprop(g);
-
-    // print("a.grad: {d:.4}\n", .{a.grad}); // 138.8338
-    // print("b.grad: {d:.4}\n", .{b.grad}); // 645.5773
-
-    // JSON output
-    // try std.json.stringify(g, .{}, std.io.getStdOut().writer());
-    // print("\n", .{});
 }

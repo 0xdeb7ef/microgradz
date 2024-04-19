@@ -1,5 +1,14 @@
 const std = @import("std");
 
+// TODO - Refactor this. It might be possible to generate the
+// network at compile-time since all the sizes are known,
+// then there won't be a reason to rely on all these allocators...
+
+// NOTE - The way this is currently used is kind of convoluted,
+// I'd ideally like to simplify it to just using MLP instead of
+// having to use Neuron and Layer beforehand.
+// Essentially, make it simpler.
+
 pub fn Neuron(comptime ValueType: type, comptime R: type) type {
     return struct {
         const Self = @This();
@@ -196,3 +205,5 @@ pub fn Random(comptime T: type) type {
         }
     };
 }
+
+// TODO - Add tests.

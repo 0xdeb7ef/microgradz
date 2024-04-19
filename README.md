@@ -50,23 +50,12 @@ print("a.grad: {d:.4}\n", .{a.grad}); // 138.8338
 print("b.grad: {d:.4}\n", .{b.grad}); // 645.5773
 ```
 
-This example can be run with: `zig build run`
-
 ## Training
 
-_TODO_
+The code in `main.zig` is a sample toy example that can be run with:
 
-## Tracing / Visualization
-
-_None, but..._
-
-You can output the graph in JSON format and visualize it using an online JSON
-visualization tool like [JSON Visio](https://omute.net/).
-
-```zig
-// JSON output
-try std.json.stringify(g, .{}, std.io.getStdOut().writer());
-print("\n", .{});
+```console
+zig build run
 ```
 
 ## Running tests

@@ -66,6 +66,7 @@ pub fn Value(comptime T: type) type {
 
         // Backprop //
         fn backprop_value(self: *Self) void {
+            // TODO - Maybe switch to function pointers?
             switch (self.expr) {
                 .nop => {},
                 .unary => |u| {
@@ -272,3 +273,5 @@ pub fn Backprop(comptime T: type) type {
         }
     };
 }
+
+// TODO - Add tests.
