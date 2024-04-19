@@ -200,7 +200,7 @@ pub fn Value(comptime T: type) type {
             return unary((@exp(self.data * 2) - 1) / (@exp(self.data * 2) + 1), .tanh, self);
         }
         fn tanh_back(self: *Self) void {
-            self.expr.unary.args[0].grad += 1 - (self.data * self.data) * self.grad;
+            self.expr.unary.args[0].grad += (1 - self.data * self.data) * self.grad;
         }
 
         pub fn exp(self: *Self) *Self {

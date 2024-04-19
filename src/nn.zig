@@ -47,10 +47,7 @@ pub fn Neuron(comptime ValueType: type, comptime R: type) type {
                 sum = sum.add(w.mul(x));
             }
 
-            return sum;
-            // FIXME - adding tanh completely breaks it.
-            // No idea why.
-            // return sum.tanh();
+            return sum.tanh();
         }
 
         pub fn parameters(self: *Self) []*ValueType {
